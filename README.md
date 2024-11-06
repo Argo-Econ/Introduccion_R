@@ -1,2 +1,2 @@
 # Introduccion_R
-Introducción a la programación en R
+Programa de introducción a la programación en R.
