@@ -71,5 +71,54 @@ Datos_ent_melt1_sort <- Datos_ent |> pivot_longer(cols = -Fecha, names_to = "Var
                                                   ,values_to = "Valor") |> 
                         filter(Variable== "Repo" ) |> arrange(desc(Fecha))
 
+# Calculo de estadisticas para Repo y DTF_90d por años
+# '=' es de asignación y cunado '==' comparación
+
+Estadisticas = Datos_ent_melt1 |>  filter(Variable==c("Repo", "DTF_90d")) |> 
+               separate(col = Fecha, into = c("año","mes","dia"),sep = "-" ,convert = T) |> 
+               group_by(año,Variable) |> summarise(media=mean(Valor)
+                                                   ,varianza=var(Valor)) |> 
+               arrange(Variable) |> ungroup()
+# Consejo, cuando se trabaja un df con agrupacmiento es importante desagrupar
+
+
+# -------------------------------------------------------------------------/
+# Elementos gráficos ------------------------------------------------------
+# -------------------------------------------------------------------------/
+
+## Grafico de distribución sencillo para la espectativa de inflación "exp_12m"
+names(Datos_ent)
+distrib_exp <- Datos_ent_melt1 |> filter(Variable=="Exp_inf_12m")
+ggplot(data = distrib_exp,mapping = aes(x=Valor, fill = Variable)) + geom_density(alpha=0.5)
+
+
+## Graficos de distribución agrupados de la expectativa de inflación ----
+distrib_exp_peryear <- distrib_exp |> separate(col = Fecha, into = c("año","mes","dia")
+                                               ,sep = "-",convert = T) #|> filter(año>2023 & año<=2024 )
+dim(distrib_exp_peryear)
+
+### Por mes -----
+ggplot(data = distrib_exp_peryear,mapping = aes(x=Valor, y=as.character(mes), fill = after_stat(x))) +
+  geom_density_ridges_gradient(scale=3, rel_min_height=0.001)+
+  scale_fill_viridis_c(name = "var anual",option = "H")
+
+### por año ----
+Data_out <- "Datos_salida/"
+png(filename = glue("{Data_out}Distribución.png"))
+ggplot(data = distrib_exp_peryear,mapping = aes(x=Valor, y=as.character(año), fill = after_stat(x))) +
+  geom_density_ridges_gradient(scale=3, rel_min_height=0.001)+
+  scale_fill_viridis_c(name = "var anual",option = "H")
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
 
 
